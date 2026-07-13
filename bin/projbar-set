@@ -1,0 +1,33 @@
+#!/bin/zsh
+# Claude Code oturumlari icin: bu oturumun SEKMESINE proje rozeti yaz.
+# Arac kabugunun kendi tty'si sekmenin tty'si DEGILDIR -> ata sureclerini
+# yukari yuruyup ilk gercek tty'yi bul (tool-zsh[??] -> claude[ttysNNN]).
+# Kullanim: projbar-set <proje|alias> [gorev metni...]
+source "$HOME/.tmux-proj.zsh" 2>/dev/null
+# source'un donus koduna guvenme — fonksiyon gercekten yuklendi mi diye bak
+whence __proj_resolve >/dev/null 2>&1 || exit 0
+raw="$1"
+[[ -z "$raw" ]] && { echo "kullanim: projbar-set <proje> [gorev]"; exit 1; }
+name=$(__proj_resolve "$raw") || exit 1
+
+pid=$$
+tty_id=""
+for _ in 1 2 3 4 5 6 7 8; do
+  pid=$(ps -o ppid= -p "$pid" 2>/dev/null | tr -d ' ')
+  [[ -z "$pid" || "$pid" == "0" || "$pid" == "1" ]] && break
+  t=$(ps -o tty= -p "$pid" 2>/dev/null | tr -d ' ')
+  if [[ -n "$t" && "$t" != "??" ]]; then tty_id="$t"; break; fi
+done
+[[ -z "$tty_id" ]] && exit 0   # headless (cron/SSH) -> sessizce cik
+
+mkdir -p "$PROJBAR_STATE" 2>/dev/null
+prev=""
+[[ -f "$PROJBAR_STATE/$tty_id" ]] && prev="${$(head -1 "$PROJBAR_STATE/$tty_id" 2>/dev/null)%%	*}"
+rgb=( $(__proj_rgb256 "$(__proj_color "$name")") )
+printf '%s\t#%02x%02x%02x\t%s\n' "$name" "${rgb[1]}" "${rgb[2]}" "${rgb[3]}" "$PROJ_BASE/$name" \
+  > "$PROJBAR_STATE/$tty_id"
+# proje degistiyse eski sekme-gorevi gecersiz
+[[ -n "$prev" && "$prev" != "$name" ]] && rm -f "$PROJBAR_STATE/task-tty-$tty_id" 2>/dev/null
+shift
+if (( $# > 0 )); then print -r -- "$*" > "$PROJBAR_STATE/task-tty-$tty_id"; fi
+echo "rozet: $name ($tty_id)"

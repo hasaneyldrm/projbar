@@ -1,0 +1,23 @@
+#!/bin/zsh
+# Claude Code oturumu icin: BU SEKMENIN gorev etiketini yaz (rozette
+# "proje — gorev" olarak gorunur). Rozet/proje hook'la otomatik; bu script
+# yalniz anlamsal gorev metni icindir.
+# Kullanim: projbar-task <gorev metni...>   |   projbar-task -  (sil)
+[[ -z "$1" ]] && { echo "kullanim: projbar-task <gorev>  |  projbar-task -"; exit 1; }
+pid=$$
+tty_id=""
+for _ in 1 2 3 4 5 6 7 8; do
+  pid=$(ps -o ppid= -p "$pid" 2>/dev/null | tr -d ' ')
+  [[ -z "$pid" || "$pid" == "0" || "$pid" == "1" ]] && break
+  t=$(ps -o tty= -p "$pid" 2>/dev/null | tr -d ' ')
+  if [[ -n "$t" && "$t" != "??" ]]; then tty_id="$t"; break; fi
+done
+[[ -z "$tty_id" ]] && exit 0
+STATE="$HOME/.local/state/projbar"
+mkdir -p "$STATE" 2>/dev/null
+if [[ "$1" == "-" ]]; then
+  rm -f "$STATE/task-tty-$tty_id"
+else
+  print -r -- "$*" > "$STATE/task-tty-$tty_id"
+fi
+echo "görev ($tty_id): $*"

@@ -1,0 +1,27 @@
+#!/bin/zsh
+# Claude Code PostToolUse hook'u — TAM OTOMATIK rozet.
+# YALNIZ niyetli alanlari tarar: komut metni + dosya/dizin yolu parametreleri.
+# Icerik govdeleri (content/new_string) ve tool_response TARANMAZ — yoksa
+# MEMORY.md gibi bir dosyayi OKUMAK bile rozeti icerikteki projeye ceviriyordu.
+input=$(cat 2>/dev/null)
+[[ -z "$input" ]] && exit 0
+
+fields=$(printf '%s' "$input" | /usr/bin/jq -r '
+  .tool_input as $i
+  | [$i.command, $i.file_path, $i.notebook_path, $i.path]
+  | map(select(type == "string"))
+  | join("\n")' 2>/dev/null)
+[[ -z "$fields" ]] && exit 0
+
+hit=$(printf '%s' "$fields" | LC_ALL=C grep -oE "(~|$HOME)/Documents/projects/[A-Za-z0-9._-]+" | head -1)
+[[ -z "$hit" ]] && exit 0
+name="${hit##*/}"
+[[ -d "$HOME/Documents/projects/$name" ]] || exit 0
+
+# Oturum basina cache: ayni proje zaten yazildiysa ps yuruyusune girme.
+sid=$(printf '%s' "$input" | /usr/bin/jq -r '.session_id // empty' 2>/dev/null)
+cache="$HOME/.local/state/projbar/.hook-${sid:-global}"
+[[ -f "$cache" && "$(<$cache)" == "$name" ]] && exit 0
+
+"$HOME/.local/bin/projbar-set" "$name" >/dev/null 2>&1 && print -r -- "$name" > "$cache"
+exit 0

@@ -1,0 +1,87 @@
+<svg width="1200" height="640" viewBox="0 0 1200 640" xmlns="http://www.w3.org/2000/svg" font-family="-apple-system, 'SF Pro Text', Segoe UI, sans-serif">
+  <defs>
+    <linearGradient id="desk" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#1a2130"/>
+      <stop offset="1" stop-color="#10141d"/>
+    </linearGradient>
+    <filter id="shadow" x="-10%" y="-10%" width="120%" height="130%">
+      <feDropShadow dx="0" dy="14" stdDeviation="22" flood-color="#000" flood-opacity="0.5"/>
+    </filter>
+  </defs>
+
+  <!-- masaüstü -->
+  <rect width="1200" height="640" rx="16" fill="url(#desk)"/>
+
+  <!-- macOS menü çubuğu -->
+  <rect x="0" y="0" width="1200" height="34" fill="#0b0e14" opacity="0.85"/>
+  <text x="22" y="23" font-size="15" fill="#e6edf3"></text>
+  <text x="46" y="23" font-size="14" font-weight="600" fill="#e6edf3">Terminal</text>
+  <g font-size="14">
+    <circle cx="962" cy="17" r="5.5" fill="#f85149"/>
+    <text x="976" y="22" fill="#e6edf3" font-weight="600">my-app</text>
+    <text x="1060" y="22" fill="#768390">14:32</text>
+    <text x="1120" y="22" fill="#768390">100%</text>
+  </g>
+
+  <!-- Terminal penceresi -->
+  <g filter="url(#shadow)">
+    <rect x="90" y="80" width="700" height="480" rx="12" fill="#161b22" stroke="#30363d"/>
+    <!-- başlık çubuğu -->
+    <rect x="90" y="80" width="700" height="40" rx="12" fill="#21262d"/>
+    <rect x="90" y="106" width="700" height="14" fill="#21262d"/>
+    <circle cx="116" cy="100" r="6.5" fill="#ff5f56"/>
+    <circle cx="138" cy="100" r="6.5" fill="#ffbd2e"/>
+    <circle cx="160" cy="100" r="6.5" fill="#27c93f"/>
+    <text x="440" y="105" font-size="13" fill="#8b949e" text-anchor="middle">my-app — claude</text>
+
+    <!-- ROZET: pencerenin sağ üstü -->
+    <g font-size="14" font-weight="600">
+      <rect x="512" y="128" width="262" height="34" rx="10" fill="#000000" opacity="0.72"/>
+      <circle cx="534" cy="145" r="6" fill="#f85149"/>
+      <text x="548" y="150" fill="#ffffff">my-app</text>
+      <text x="612" y="150" fill="#c9d1d9" font-weight="400">—  payment flow fix</text>
+    </g>
+
+    <!-- terminal içeriği -->
+    <g font-family="'SF Mono', ui-monospace, Menlo, monospace" font-size="15">
+      <text x="118" y="200" fill="#57ab5a">➜</text>
+      <text x="140" y="200" fill="#e6edf3">c app</text>
+      <text x="118" y="232" fill="#768390">jumped to ~/projects/my-app · tab tinted · claude started</text>
+      <text x="118" y="280" fill="#d29922">✳ Claude is refactoring the payment flow…</text>
+      <text x="118" y="320" fill="#768390">⏺ Update(src/payments/charge.ts)</text>
+      <text x="118" y="352" fill="#768390">⏺ Bash(npm test -- payments)</text>
+      <text x="118" y="400" fill="#57ab5a">✓ 24 tests passed</text>
+      <text x="118" y="448" fill="#57ab5a">➜</text>
+      <rect x="140" y="435" width="11" height="19" fill="#e6edf3">
+        <animate attributeName="opacity" values="1;0;1" dur="1.2s" repeatCount="indefinite"/>
+      </rect>
+    </g>
+  </g>
+
+  <!-- Menü dropdown mockup -->
+  <g filter="url(#shadow)">
+    <rect x="840" y="46" width="300" height="308" rx="12" fill="#22272e" stroke="#444c56"/>
+    <text x="862" y="82" font-size="11" font-weight="700" fill="#768390" letter-spacing="1">AÇIK İŞLER  (⌥TAB İLE DÖNGÜ)</text>
+
+    <rect x="850" y="94" width="280" height="40" rx="8" fill="#316dca"/>
+    <circle cx="870" cy="114" r="6" fill="#f85149"/>
+    <text x="884" y="119" font-size="14" fill="#ffffff" font-weight="600">my-app <tspan font-weight="400" fill="#cdd9e5">— payment flow fix</tspan></text>
+
+    <g font-size="14" fill="#adbac7">
+      <circle cx="870" cy="158" r="6" fill="#f85149"/>
+      <text x="884" y="163" fill="#e6edf3" font-weight="600">my-app <tspan font-weight="400" fill="#768390">— webhook retries</tspan></text>
+      <circle cx="870" cy="196" r="6" fill="#539bf5"/>
+      <text x="884" y="201" fill="#e6edf3" font-weight="600">my-api <tspan font-weight="400" fill="#768390">— rate limiter</tspan></text>
+      <circle cx="870" cy="234" r="6" fill="#57ab5a"/>
+      <text x="884" y="239" fill="#e6edf3" font-weight="600">my-website</text>
+    </g>
+
+    <line x1="850" y1="258" x2="1130" y2="258" stroke="#444c56"/>
+    <text x="862" y="284" font-size="11" font-weight="700" fill="#768390" letter-spacing="1">YENİ SEKMEDE AÇ</text>
+    <text x="884" y="312" font-size="14" fill="#adbac7">design-system</text>
+    <text x="884" y="338" font-size="14" fill="#adbac7">side-project</text>
+  </g>
+
+  <!-- alt açıklama -->
+  <text x="600" y="612" font-size="15" fill="#586069" text-anchor="middle">badge follows the window · menu lists every open job per tab · ⌥Tab jumps between them</text>
+</svg>

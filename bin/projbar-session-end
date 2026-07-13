@@ -1,0 +1,22 @@
+#!/bin/zsh
+# Claude Code SessionEnd hook'u: oturum kapaninca bu sekmenin GOREV etiketini
+# temizle — "sentry entegrasyonu" gibi bayat etiketler asili kalmasin.
+# (Rozet/proje kalir; sekme hala o projededir. Yalniz IS etiketi silinir.)
+input=$(cat 2>/dev/null)
+
+pid=$$
+tty_id=""
+for _ in 1 2 3 4 5 6 7 8; do
+  pid=$(ps -o ppid= -p "$pid" 2>/dev/null | tr -d ' ')
+  [[ -z "$pid" || "$pid" == "0" || "$pid" == "1" ]] && break
+  t=$(ps -o tty= -p "$pid" 2>/dev/null | tr -d ' ')
+  if [[ -n "$t" && "$t" != "??" ]]; then tty_id="$t"; break; fi
+done
+[[ -z "$tty_id" ]] && exit 0
+
+STATE="$HOME/.local/state/projbar"
+rm -f "$STATE/task-tty-$tty_id" 2>/dev/null
+# oturumun hook cache'ini de supur
+sid=$(printf '%s' "$input" | /usr/bin/jq -r '.session_id // empty' 2>/dev/null)
+[[ -n "$sid" ]] && rm -f "$STATE/.hook-$sid" 2>/dev/null
+exit 0

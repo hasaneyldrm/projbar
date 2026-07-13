@@ -449,9 +449,18 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
         axWatchedWindow = win
     }
 
+    // AX olayları SEL gibi gelebilir: Claude Code sekme başlığını spinner/durum
+    // için saniyede onlarca kez günceller, her biri TitleChanged tetikler.
+    // Olayları 200 ms'lik pencerede TOPLA → tek render. Boşta olay yok = tik yok.
+    var axCoalesceScheduled = false
     func axEvent() {
         watchFocusedWindowTitle()
-        renderFromAX()
+        if axCoalesceScheduled { return }
+        axCoalesceScheduled = true
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.2) { [weak self] in
+            self?.axCoalesceScheduled = false
+            self?.renderFromAX()
+        }
     }
 
     /// Ön penceredeki başlık + çerçeve — süreç doğurmadan, C çağrılarıyla.
@@ -495,11 +504,18 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
         return nil
     }
 
-    /// Başlıktan çözülemeyen sekme: tty'yi TEK SEFER osascript'le al, state
-    /// dosyasından projeye bağla, başlığa göre cache'le. Başlık değişmedikçe
-    /// bir daha sorgu yok — boşta maliyet sıfır kalır.
+    var lastTTYLookupAt = Date.distantPast
+    var lastFailedTitle = ""
+    /// Başlıktan çözülemeyen sekme: tty'yi osascript'le al, state dosyasından
+    /// projeye bağla, başlığa göre cache'le. GÜVENLİKLER: (1) aynı başlık az
+    /// önce başarısız olduysa hemen tekrar deneme; (2) osascript'ler arasına
+    /// en az 1.5 sn koy — Claude başlığı sürekli değiştirse bile spawn seli
+    /// olmasın. Başarıda cache kalıcı; boşta maliyet sıfır.
     func resolveTitleViaTTY(_ title: String) {
         guard !pendingTitleLookups.contains(title) else { return }
+        if title == lastFailedTitle && Date().timeIntervalSince(lastTTYLookupAt) < 5.0 { return }
+        if Date().timeIntervalSince(lastTTYLookupAt) < 1.5 { return }
+        lastTTYLookupAt = Date()
         pendingTitleLookups.insert(title)
         DispatchQueue.global(qos: .utility).async {
             let info = frontTabInfo()
@@ -533,12 +549,16 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
             DispatchQueue.main.async {
                 self.pendingTitleLookups.remove(title)
                 if let project, let tty = info?.tty {
+                    self.lastFailedTitle = ""
                     if self.titleTabCache.count > 100 { self.titleTabCache.removeAll() }
                     self.titleTabCache[title] = (tty: tty, project: project)
                     if self.projectColors[project] == nil {
                         self.projectColors[project] = fallbackColorHex(project)
                     }
                     self.renderFromAX()
+                } else {
+                    // Çözülemedi → aynı başlıkla 5 sn tekrar deneme (spawn seli önle).
+                    self.lastFailedTitle = title
                 }
                 // hiçbir yoldan çözülemediyse cache'e YAZMA — sekme sonradan
                 // projeye girerse bir sonraki olayda yeniden denenir.
